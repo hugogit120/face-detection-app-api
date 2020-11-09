@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const saltRounds = 10;
 const User = require("../models/User");
 const mongoose = require("mongoose");
+const image = require("../clarifaicontroler/controler")
 
 
 router.get("/", (req, res, next) => {
@@ -20,11 +21,10 @@ router.post("/signin",
                 res.status(404).json("user not found")
                 return
             }
-            else if (bcrypt.compareSync(password, user.password)) {
-                res.status(200).json(user);
-
-            } else {
-                res.status(401).json("wrong password")
+            else if (user) {
+                bcrypt.compareSync(password, user.password)
+                    ? res.status(200).json(user)
+                    : res.status(404).json("wrong password")
             }
         }
         catch (error) {
@@ -39,6 +39,11 @@ router.post(
         const salt = bcrypt.genSaltSync(saltRounds)
         const hashPassword = bcrypt.hashSync(password, salt)
         try {
+            console.log(name, email, password);
+            if (name === "" || email === "" || password === "") {
+                res.status(400).json("fill the inputs")
+                return
+            }
             const emailExist = await User.findOne({ email }, "email")
             if (emailExist) {
                 res.status(400).json("email already exist")
@@ -96,5 +101,7 @@ router.put("/image",
             res.status(500).json("id is not valid")
         }
     })
+
+router.post("/imageurl", (req, res) => { image.handleApiCall(req, res) })
 
 module.exports = router
