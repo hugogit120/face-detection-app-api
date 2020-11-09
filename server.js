@@ -63,7 +63,7 @@ app.use(express.static(path.join(__dirname, "public")));
 // );
 
 app.get("/", (req, res, next) => {
-    res.json("its working")
+    res.send("its working")
 })
 
 // const auth = require("./routes/auth");
