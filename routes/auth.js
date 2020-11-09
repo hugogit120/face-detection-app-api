@@ -9,7 +9,7 @@ const image = require("../clarifaicontroler/controler")
 
 
 router.get("/", (req, res, next) => {
-    res.send(database.users)
+    res.json("its working")
 })
 
 router.post("/signin",
