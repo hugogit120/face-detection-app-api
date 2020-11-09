@@ -7,11 +7,6 @@ const User = require("../models/User");
 const mongoose = require("mongoose");
 const image = require("../clarifaicontroler/controler")
 
-
-router.get("/", (req, res, next) => {
-    res.json("its working")
-})
-
 router.post("/signin",
     async (req, res, next) => {
         const { email, password } = req.body;

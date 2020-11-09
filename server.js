@@ -13,20 +13,20 @@ const path = require("path")
 const cors = require("cors");
 const app = express()
 
-mongoose
-    .connect(process.env.MONGODB_URI, {
-        keepAlive: true,
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-    })
-    .then(response => {
-        console.log(
-            `Connected to Mongo! Database name: "${response.connections[0].name}"`
-        );
-    })
-    .catch(err => {
-        console.log("error connecting to mongo", err);
-    })
+// mongoose
+//     .connect(process.env.MONGODB_URI, {
+//         keepAlive: true,
+//         useNewUrlParser: true,
+//         useUnifiedTopology: true
+//     })
+//     .then(response => {
+//         console.log(
+//             `Connected to Mongo! Database name: "${response.connections[0].name}"`
+//         );
+//     })
+//     .catch(err => {
+//         console.log("error connecting to mongo", err);
+//     })
 
 // app.listen(4000, () => {
 //     console.log("app is runing on port 4000");
@@ -47,22 +47,26 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use(
-    session({
-        secret: process.env.SECRET_SESSION,
-        cookie: {
-            maxAge: 6000000,
-        },
-        resave: false,
-        saveUninitialized: true,
-        store: new MongoStore({
-            mongooseConnection: mongoose.connection,
-            ttl: 24 * 60 * 60 * 1000, // 1 day
-        }),
-    })
-);
+// app.use(
+//     session({
+//         secret: process.env.SECRET_SESSION,
+//         cookie: {
+//             maxAge: 6000000,
+//         },
+//         resave: false,
+//         saveUninitialized: true,
+//         store: new MongoStore({
+//             mongooseConnection: mongoose.connection,
+//             ttl: 24 * 60 * 60 * 1000, // 1 day
+//         }),
+//     })
+// );
 
-const auth = require("./routes/auth");
+app.get("/", (req, res, next) => {
+    res.json("its working")
+})
 
-app.use("/", auth)
+// const auth = require("./routes/auth");
+
+// app.use("/", auth)
 
