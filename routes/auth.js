@@ -4,70 +4,97 @@ const createError = require("http-errors");
 const bcrypt = require("bcryptjs");
 const saltRounds = 10;
 const User = require("../models/User");
+const mongoose = require("mongoose");
+
 
 router.get("/", (req, res, next) => {
     res.send(database.users)
 })
 
-router.post("/signin", (req, res, next) => {
-    const { email, password } = req.body;
-    console.log(req.body);
-    if (email === database.users[0].email && password === database.users[0].password) {
-        res.json(database.users[0])
-    } else {
-        res.status(400).json("error loggin in")
-    }
-})
+router.post("/signin",
+    async (req, res, next) => {
+        const { email, password } = req.body;
+        try {
+            let user = await User.findOne({ email: email });
+            if (!user) {
+                res.status(404).json("user not found")
+                return
+            }
+            else if (bcrypt.compareSync(password, user.password)) {
+                res.status(200).json(user);
+
+            } else {
+                res.status(401).json("wrong password")
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    })
 
 router.post(
     "/register",
     async (req, res, next) => {
-        console.log("heeey")
         const { name, email, password } = req.body;
+        const salt = bcrypt.genSaltSync(saltRounds)
+        const hashPassword = bcrypt.hashSync(password, salt)
         try {
             const emailExist = await User.findOne({ email }, "email")
             if (emailExist) {
-                return res.send("Email already exist")
+                res.status(400).json("email already exist")
             } else {
-                const newUser = await User.create({ name, email, password })
+                const newUser = await User.create({ name, email, password: hashPassword })
                 res.status(200).json(newUser)
                 console.log("user Created: ", newUser);
             }
         }
         catch {
             err => {
-                next(err)
+                res.status(400).json(err)
             }
         }
     })
 
-router.get("/profile/:id", (req, res, next) => {
-    const { id } = req.params
-    let found = false
-    database.users.forEach(user => {
-        if (user.id === id) {
-            found = true
-            return res.json(user)
+router.get("/profile/:id",
+    async (req, res, next) => {
+        const { id } = req.params
+        if (mongoose.Types.ObjectId.isValid(id)) {
+            try {
+                const user = await User.findById(id);
+                if (user) {
+                    res.status(200).send(user)
+                } else {
+                    res.status(400).json("no user found")
+                }
+            }
+            catch (err) {
+                res.send(err)
+            }
+        } else {
+            res.status(500).json("id is not valid")
         }
     })
-    if (!found) {
-        res.status(400).json("not found")
-    }
-})
 
-router.put("/image", (req, res, next) => {
-    const { id } = req.body
-    let found = false
-    database.users.forEach(user => {
-        if (user.id === id) {
-            found = true
-            user.entries++
-            return res.json(user.entries)
+router.put("/image",
+    async (req, res, next) => {
+        const { id } = req.body
+
+        if (mongoose.Types.ObjectId.isValid(id)) {
+            try {
+                const userToEdit = await User.findByIdAndUpdate(id, { $inc: { entries: 1 } }, { new: true })
+                if (userToEdit) {
+
+                    res.status(200).json(userToEdit)
+                } else {
+                    res.status(400).json("no user found")
+                }
+            }
+            catch (err) {
+                res.send(err)
+            }
+        } else {
+            res.status(500).json("id is not valid")
         }
     })
-    if (!found) {
-        res.status(400).json("not found")
-    }
-})
 
 module.exports = router
