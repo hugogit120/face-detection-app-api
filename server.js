@@ -28,8 +28,12 @@ mongoose
         console.log("error connecting to mongo", err);
     })
 
-app.listen(4000, () => {
-    console.log("app is runing on port 4000");
+// app.listen(4000, () => {
+//     console.log("app is runing on port 4000");
+// }) --->para uso local
+
+app.listen(process.env.PORT || 4000, () => {
+    console.log(`app is running on port ${process.env.PORT}`);
 })
 
 app.use(cors({
